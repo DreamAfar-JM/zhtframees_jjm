@@ -81,7 +81,14 @@ $(function(){
 
  function openAddDialog(){
 	var url="${ctx}/rbac/menu/enterAddMenu";
-	var options={title:"资源添加",width:600,height:400, url:url,onClosed:function(){reload();}};
+	var options={
+			title:"资源添加",
+			width:600,
+			height:400, 
+			url:url,
+			onClosed:function(){reload();}
+		
+	};
 	editDialog.open(options);
  }
  function openeditDialog(){

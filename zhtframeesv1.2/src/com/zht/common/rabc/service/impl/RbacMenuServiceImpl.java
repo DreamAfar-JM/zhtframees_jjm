@@ -29,25 +29,25 @@ import com.zht.common.rabc.view.AccordtionView;
 import com.zht.common.rabc.view.LinkbuttonView;
 
 @Service
-@Transactional(rollbackFor=Exception.class)
-public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IRbacMenuService{
+@Transactional(rollbackFor = Exception.class)
+public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IRbacMenuService {
 
 	@Autowired
-	private IRbacModuleDao  rbacMenuModuleDao;
+	private IRbacModuleDao rbacMenuModuleDao;
 	@Autowired
-	private IRbacMenuDao  rbacMenuDao;
-	
-	private void fillContent(AccordtionView view,List<Map<String,Object>> data){
-		List<LinkbuttonView> linkbuttonViewList=new ArrayList<LinkbuttonView>(); 
-		for (Map<String,Object> map : data) {
+	private IRbacMenuDao rbacMenuDao;
+
+	private void fillContent(AccordtionView view, List<Map<String, Object>> data) {
+		List<LinkbuttonView> linkbuttonViewList = new ArrayList<LinkbuttonView>();
+		for (Map<String, Object> map : data) {
 			Long pid = (Long) map.get("pid");
-			if(view.getId().equals(pid)){
-				LinkbuttonView btnView=new LinkbuttonView();
+			if (view.getId().equals(pid)) {
+				LinkbuttonView btnView = new LinkbuttonView();
 				btnView.setDisplay((String) map.get("display"));
 				btnView.setIconCls((String) map.get("iconCls"));
-				String url=(String) map.get("url");
-				if(url!=null&&url.startsWith("/")){
-					url=ZStrUtil.substringAfter(url,"/");
+				String url = (String) map.get("url");
+				if (url != null && url.startsWith("/")) {
+					url = ZStrUtil.substringAfter(url, "/");
 				}
 				btnView.setUrl(url);
 				btnView.setId((Long) map.get("id"));
@@ -56,7 +56,17 @@ public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IR
 		}
 		view.setLinkbuttonViewList(linkbuttonViewList);
 	}
-	
+
+	public List<Long> findMenuIdListByParentId(String parentId) {
+		List<Long> rootIdList = (List<Long>) baseDaoImpl.findJustList("select id from RbacMenu m where m.parentRbacMenu.id = " + parentId,
+				new ParamObject(POType.H_NO_NC));
+		if (rootIdList == null || rootIdList.size() == 0) {
+			throw new ServiceLogicalException("未发现数据根节点，请检查数据 ");
+		}
+
+		return rootIdList;
+	}
+
 	@Override
 	public List<AccordtionView> findMenuListByModuleId(Long moduleId) {
 //		if(moduleId==null){
@@ -74,10 +84,25 @@ public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IR
 				if(moduleId!=null){
 					hql +="where mm.rbacModule.id=:rbacModuleId ";
 					paramObject.addParam("rbacModuleId", moduleId);
+				}else{
+				
+					//JJM 20150505 09:05
+					//第一层菜单
+					hql +=" where mm.parentRbacMenu.id=:menuRootId ";
+					paramObject.addParam("menuRootId",findMenuIdListByParentId(null).get(0));
+					//第二层菜单
+					List<Long> menuIdList = findMenuIdListByParentId(findMenuIdListByParentId(null).get(0).toString());
+					if (menuIdList!=null&&menuIdList.size()>0) {
+						for (int i = 0; i < menuIdList.size(); i++) {
+							hql +=" or mm.parentRbacMenu.id=:menuId"+i;
+							paramObject.addParam("menuId"+i, menuIdList.get(i));
+						}
+					}
+					
 				}
 				
 		DataSet dataSet=rbacMenuDao.loadDataSet(hql,paramObject);
-		
+		List<Map<String, Object>> rows = dataSet.getRows();
 		
 		if (dataSet != null && dataSet.getRows() != null) {
 			List<AccordtionView> groupList = new ArrayList<AccordtionView>();
@@ -97,45 +122,39 @@ public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IR
 		}
 		return null;
 	}
+
 	@Override
-	public DataSet  loadRbacMenuTreeGrid(ParamObject paramObject) {
+	public DataSet loadRbacMenuTreeGrid(ParamObject paramObject) {
 		paramObject.initType(POType.H_NO_NC);
-	  String hql=" select "
-						 + "m.id as id ,"
-				         + "m.parentRbacMenu.id as _parentId ,"
-				         + "m.display as display, "
-				         + "m.iconCls as iconCls,"
-				         + "m.description as description,"
-				         + "m.type as type, "
-				         + "m.disIndex as disIndex, "
-				         + "p.url as url "
-				         
-				         + "@from RbacMenu m left join m.rbacPermission p";
-		DataSet dataSet=baseDaoImpl.loadDataSet(hql,paramObject);
+		String hql = " select " + "m.id as id ," + "m.parentRbacMenu.id as _parentId ," + "m.display as display, " + "m.iconCls as iconCls,"
+				+ "m.description as description," + "m.type as type, " + "m.disIndex as disIndex, " + "p.url as url "
+
+				+ "@from RbacMenu m left join m.rbacPermission p";
+		DataSet dataSet = baseDaoImpl.loadDataSet(hql, paramObject);
 		return dataSet;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public List<Map> loadMenuCombotree() {
-		List<Long> rootIdList=(List<Long>) baseDaoImpl.findJustList("select id from RbacMenu m where m.parentRbacMenu.id is null ", new ParamObject(POType.H_NO_NC));
-		if(rootIdList==null||rootIdList.size()==0){
+		List<Long> rootIdList = (List<Long>) baseDaoImpl.findJustList("select id from RbacMenu m where m.parentRbacMenu.id is null ",
+				new ParamObject(POType.H_NO_NC));
+		if (rootIdList == null || rootIdList.size() == 0) {
 			throw new ServiceLogicalException("未发现数据根节点，请检查数据 ");
 		}
 
-		if(rootIdList.size()>1){
+		if (rootIdList.size() > 1) {
 			throw new ServiceLogicalException("发现多个根节点数据，请检查数据 ");
 		}
-		String hql=" select "
-						 + "g.id as id ,"
-				         + "g.parentRbacMenu.id as _parentId ,"
-				         + "g.display as text "
-				         + "@from RbacMenu g ";
-		
-		DataSet dataSet=baseDaoImpl.loadDataSet(hql,new ParamObject(POType.H_NO_NC));
-		Map root=dataSet.getRows().get(0);
-		RbacMenuUtil.traverse(root,dataSet.getRows());
-		List<Map> mapList=new ArrayList<Map>();
+		String hql = " select " + "g.id as id ," + "g.parentRbacMenu.id as _parentId ," + "g.display as text " + "@from RbacMenu g "
+				+ "order by g.parentRbacMenu.id ";
+
+		DataSet dataSet = baseDaoImpl.loadDataSet(hql, new ParamObject(POType.H_NO_NC));
+		List<Map<String, Object>> rows = dataSet.getRows();
+		Map root = dataSet.getRows().get(0);// 菜单根节点 parent_id = null ORDER BY
+											// parent_id 根节点位于第一位
+		RbacMenuUtil.traverse(root, dataSet.getRows());
+		List<Map> mapList = new ArrayList<Map>();
 		mapList.add(root);
 		return mapList;
 	}
@@ -143,7 +162,7 @@ public class RbacMenuServiceImpl extends BaseServiceImpl<RbacMenu> implements IR
 	@Override
 	public void deleteRbacMenu(Serializable id) {
 		baseDaoImpl.delete(RbacMenu.class, id);
-		
+
 	}
- 
+
 }

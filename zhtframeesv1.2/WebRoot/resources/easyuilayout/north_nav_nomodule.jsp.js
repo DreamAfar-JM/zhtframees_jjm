@@ -15,7 +15,7 @@ function loadAllMenus(ajaxMenuUrl){
 				 var menulist ="<div style=\"padding:2px 2px;\" >";
 				 if(item.linkbuttonViewList &&item.linkbuttonViewList.length>0){
 					 $.each(item.linkbuttonViewList,function(ci,citem){
-						 var menuTitle=citem.display;
+						 	var menuTitle=citem.display;
 							var effort=citem.display+"||"+citem.iconCls+"||"+citem.url;
 							menulist+=""+ 
 							"<a href=\"javascript:void(0);\" "+

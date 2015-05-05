@@ -1,6 +1,7 @@
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
 <%@ include file="/resources/meta/taglib.jsp" %>
 <script type="text/javascript">
+	
 	function doSubmit(){
 		if(!ZHTAJAX.validateFromCallback($("#formss"),ZHT.ajaxDoneAndCloseDialog)){
 			alertMsg.info("请确认校验不通过数据");
@@ -9,6 +10,7 @@
 	function cancel(){
 		editDialog.close(100);
 	}
+
 </script>
 <div class="easyui-layout" data-options="fit:true,border:false">
 	<div data-options="region:'center',border:false ," title="" style="overflow: hidden;padding: 10px;">
@@ -29,9 +31,10 @@
 					  <tr>
 					    <th>类型</th>
 						<td>	
-						    <select id="enabled" name="type"   class="easyui-combobox"  style="width:170px;"  data-options="required:true" >
-								<option value="G" <c:if test="${rbacMenu.type eq 'G' }">selected="selected"</c:if>>分组</option>
+						    <select id="type" name="type"  class="easyui-combobox"  style="width:170px;" data-options="required:true">
 								<option value="M" <c:if test="${rbacMenu.type eq 'M' }">selected="selected"</c:if>>菜单</option>
+								<option value="G" <c:if test="${rbacMenu.type eq 'G' }">selected="selected"</c:if>>分组</option>
+								
 							</select>
 						</td>
 						<th>TAB标题</th>
@@ -41,8 +44,8 @@
 						<th>显示顺序</th>
 						<td><input id="disIndex" name="disIndex"  value="${rbacMenu.disIndex}" type="text" class="easyui-textbox easyui-validatebox"  /></td>
 				
-					 	<th>操作地址</th>
-						<td>
+					 	<th id="urlTh">操作地址</th>
+						<td id="urlTd">
 							<input class="easyui-combotree"
 								data-options="url:'${pageContext.request.contextPath}/rbac/permission/loadPermissionList',method:'post',valueField:'id',textField:'text'"
 							 name="rbacPermission.id" value="${rbacMenu.rbacPermission.id}"  style="width:300px"/></td>

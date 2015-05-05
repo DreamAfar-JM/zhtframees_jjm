@@ -35,7 +35,7 @@ $(function(){
 				idField:'id',//分页保留选中
 				toolbar:"#toolbarDiv",
 				columns:[[
-					//{field:'id',width:20,checkbox:true},
+					{field:'id',width:20,checkbox:true},
 					{field:'name',title:'实体类名',width:330,sortable:true},
 					//{field:'careateTime',title:'初始化时间',width:125},
 					{field:'lastModifyTime',title:'最后修改时间',width:125,},
@@ -210,6 +210,7 @@ $(function(){
 	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-color"  onclick="openeAddDialog();">创建实体 </a>
 	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-color"  onclick="openEditProperty();">编辑属性 </a>
 	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-remove"  onclick="deleteTreeNode();">查看 </a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-remove"  onclick="deleteTreeNode();">删除 </a>
 </div>	
 </body>
 </html>

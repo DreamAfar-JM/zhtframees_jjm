@@ -26,7 +26,7 @@
 							data-options="  validType:'length[0,50]'" /></td>
 						<th>性别:</th>
 						<td><select name="sex" class="easyui-combobox" style="width: 170px;">
-								<option value=" 1" <c:if test="${duser.sex eq ' 1' }">selected='selected' </c:if>>男</option>
+								<option value="1" <c:if test="${duser.sex eq '1' }">selected='selected' </c:if>>男</option>
 								<option value="0" <c:if test="${duser.sex eq '0' }">selected='selected' </c:if>>女</option>
 						</select></td>
 					</tr>
